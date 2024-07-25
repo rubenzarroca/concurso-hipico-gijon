@@ -1,7 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { database } from '../firebase'; // Ajusta la ruta según la ubicación de firebase.js
-import { ref, push, remove, onValue } from 'firebase/database';
 
 const Dashboard = () => {
   const [selectedDay, setSelectedDay] = useState('');
@@ -13,48 +11,39 @@ const Dashboard = () => {
   const days = ['27 Agosto', '28 Agosto', '29 Agosto', '30 Agosto', '31 Agosto', '1 Septiembre'];
 
   useEffect(() => {
-    const betsRef = ref(database, 'bets');
-    const unsubscribe = onValue(betsRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const betsArray = Object.entries(data).map(([key, value]) => ({
-          id: key,
-          ...value
-        }));
-        setBets(betsArray);
-      } else {
-        setBets([]);
-      }
-    });
-
-    return () => unsubscribe();
+    const storedBets = localStorage.getItem('bets');
+    if (storedBets) {
+      setBets(JSON.parse(storedBets));
+    }
   }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log("Enviando apuesta...");
     const newBet = {
+      id: Date.now(),
       day: selectedDay,
       series,
       betAmount: parseFloat(betAmount),
       prizeAmount: parseFloat(prizeAmount),
       balance: parseFloat(prizeAmount) - parseFloat(betAmount)
     };
-    push(ref(database, 'bets'), newBet)
-      .then(() => {
-        setSeries('');
-        setBetAmount('');
-        setPrizeAmount('');
-      })
-      .catch((error) => {
-        console.error('Error adding new bet: ', error);
-      });
+    console.log("Nueva apuesta:", newBet);
+    const updatedBets = [...bets, newBet];
+    setBets(updatedBets);
+    localStorage.setItem('bets', JSON.stringify(updatedBets));
+    console.log("Apuesta registrada exitosamente.");
+    setSelectedDay('');
+    setSeries('');
+    setBetAmount('');
+    setPrizeAmount('');
   };
 
   const handleDelete = (id) => {
-    remove(ref(database, `bets/${id}`))
-      .catch((error) => {
-        console.error('Error deleting bet: ', error);
-      });
+    console.log("Eliminando apuesta con id:", id);
+    const updatedBets = bets.filter(bet => bet.id !== id);
+    setBets(updatedBets);
+    localStorage.setItem('bets', JSON.stringify(updatedBets));
   };
 
   const filteredBets = bets.filter(bet => bet.day === selectedDay);
