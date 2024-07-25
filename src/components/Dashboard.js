@@ -10,6 +10,19 @@ const Dashboard = () => {
 
   const days = ['27 Agosto', '28 Agosto', '29 Agosto', '30 Agosto', '31 Agosto', '1 Septiembre'];
 
+  useEffect(() => {
+    // Cargar datos de localStorage al montar el componente
+    const storedBets = localStorage.getItem('bets');
+    if (storedBets) {
+      setBets(JSON.parse(storedBets));
+    }
+  }, []);
+
+  useEffect(() => {
+    // Guardar datos en localStorage cuando cambian las apuestas
+    localStorage.setItem('bets', JSON.stringify(bets));
+  }, [bets]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const newBet = {
