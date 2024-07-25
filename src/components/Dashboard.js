@@ -43,7 +43,7 @@ const Dashboard = () => {
       name: day,
       balance: bets.filter(bet => bet.day === day).reduce((sum, bet) => sum + bet.balance, 0)
     }));
-  }, [bets]);
+  }, [bets, days]);
 
   const formatEuro = (value) => `${value.toFixed(2)} €`;
 
